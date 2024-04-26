@@ -29,7 +29,7 @@ public class Main{
         
         List<String> commands = List.of("-c","-l","-w");
 
-        if(operation == null || operation.isBlank()){
+        if(filePath != null && (operation == null || operation.isBlank())){
             final String fp = filePath; 
             commands.stream().forEach(command->proccessCommand(command,fp)); 
         }
