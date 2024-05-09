@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="ccwc">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/ccwc/ccwc.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

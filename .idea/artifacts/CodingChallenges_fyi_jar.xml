@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact name="CodingChallenges.fyi:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/CodingChallenges_fyi_jar</output-path>
+    <root id="root">
+      <element id="archive" name="CodingChallenges.fyi.jar">
+        <element id="module-output" name="CodingChallenges.fyi" />
+      </element>
+    </root>
+  </artifact>
+</component>
