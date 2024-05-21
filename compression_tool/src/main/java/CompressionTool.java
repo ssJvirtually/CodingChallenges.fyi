@@ -2,8 +2,11 @@ import java.io.*;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
 
-//  Huffman tree node
+// Huffman tree node
 class HuffmanNode implements Serializable {
     char ch;
     int val;
@@ -19,25 +22,46 @@ class HuffmanNode implements Serializable {
     }
 }
 
-//  Comparator for Huffman tree
+// Comparator for Huffman tree
 class MyComparator implements Comparator<HuffmanNode> {
     public int compare(HuffmanNode x, HuffmanNode y) {
         return x.val - y.val;
     }
 }
 
-public class CompressionTool {
-    /**
-     * The main function that performs Huffman compression on a given file.
-     *
-     * @param args the command line arguments (not used in this function)
-     */
+@Command(name = "CompressionTool", mixinStandardHelpOptions = true, version = "CompressionTool 1.0",
+        description = "Encodes and decodes files using Huffman coding.")
+public class CompressionTool implements Runnable {
+
+    @Option(names = {"-o", "--operation"}, description = "The operation to perform: encode or decode", required = true)
+    private String operation;
+
+    @Option(names = {"-i", "--input"}, description = "The input file path for encoding or decoding", required = true)
+    private String inputFilename;
+
+    @Option(names = {"-d", "--decoded"}, description = "The output file path for decoded content")
+    private String decodedOutputFilename;
+
     public static void main(String[] args) {
+        int exitCode = new CommandLine(new CompressionTool()).execute(args);
+        System.exit(exitCode);
+    }
 
+    @Override
+    public void run() {
+        switch (operation) {
+            case "encode":
+                encodeFile(inputFilename);
+                break;
+            case "decode":
+                decodeFile(inputFilename, decodedOutputFilename);
+                break;
+            default:
+                System.err.println("Invalid operation. Use 'encode' or 'decode'.");
+        }
+    }
 
-
-        // Example file path
-        String filePath = args[0];
+    public static void encodeFile(String filePath) {
         Path path = Path.of(filePath);
         if (!new File(filePath).isFile()) {
             System.err.println("Invalid file");
@@ -60,14 +84,7 @@ public class CompressionTool {
         // Step 4 5: Serialize Huffman Tree and Encoded Data
         String compressedFilePath = path.getParent() + File.separator + path.getFileName().toString().replace(".txt", "") + ".bin";
         writeCompressedFile(root, codes, str, compressedFilePath);
-
-        // Step 6 7: Decode the File
-        String decompressedFilePath = path.getParent() + File.separator + path.getFileName().toString().replace(".txt", "") + "_decompressed.txt";
-        decodeFile(compressedFilePath, decompressedFilePath);
     }
-
-
-    
 
     /**
      * Reads the content of a file and returns it as a string.
@@ -150,7 +167,6 @@ public class CompressionTool {
                 .collect(Collectors.groupingBy(c -> c, TreeMap::new, Collectors.summingInt(c -> 1)));
     }
 
-
     /**
      * Writes the compressed file to a binary file.
      *
@@ -215,6 +231,10 @@ public class CompressionTool {
      * @param outputFilename
      */
     public static void decodeFile(String compressedFilePath, String outputFilename) {
+        if (outputFilename == null || outputFilename.isEmpty()) {
+            System.err.println("Output filename for decoding is required.");
+            System.exit(1);
+        }
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(compressedFilePath));
              BufferedWriter writer = new BufferedWriter(new FileWriter(outputFilename))) {
             // Deserialize Huffman Tree
@@ -248,4 +268,3 @@ public class CompressionTool {
         }
     }
 }
-
