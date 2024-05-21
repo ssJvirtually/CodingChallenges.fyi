@@ -1,45 +1,35 @@
 import java.io.*;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
-//  Huffman tree node
-class HuffmanNode implements Serializable {
+class HuffmanNodeTemp implements Serializable {
     char ch;
     int val;
-    HuffmanNode right;
-    HuffmanNode left;
+    HuffmanNodeTemp right;
+    HuffmanNodeTemp left;
 
-    public HuffmanNode() {
+    public HuffmanNodeTemp() {
     }
 
-    public HuffmanNode(char ch, int val) {
+    public HuffmanNodeTemp(char ch, int val) {
         this.ch = ch;
         this.val = val;
     }
 }
 
-//  Comparator for Huffman tree
-class MyComparator implements Comparator<HuffmanNode> {
-    public int compare(HuffmanNode x, HuffmanNode y) {
+class MyComparator1 implements Comparator<HuffmanNodeTemp> {
+    public int compare(HuffmanNodeTemp x, HuffmanNodeTemp y) {
         return x.val - y.val;
     }
 }
 
-public class CompressionTool {
-    /**
-     * The main function that performs Huffman compression on a given file.
-     *
-     * @param args the command line arguments (not used in this function)
-     */
+public class CompressionTool1 {
+
     public static void main(String[] args) {
-
-
-
         // Example file path
-        String filePath = args[0];
-        Path path = Path.of(filePath);
-        if (!new File(filePath).isFile()) {
+        String filePath = "D:\\jskr456\\CodingChallenges.fyi\\compression_tool\\135-0.txt";
+
+        if (!filePath.endsWith(".txt") || !new File(filePath).isFile()) {
             System.err.println("Invalid file");
             System.exit(0);
         }
@@ -47,34 +37,27 @@ public class CompressionTool {
         // Step 1: Read the file content
         String str = readFileContent(filePath);
 
-        // Step 2: Get character frequencies & Create Huffman Tree
+        // Step 2: Get character frequencies
         Map<Character, Integer> charFrequencies = getCharFrequencies(str);
         charFrequencies.forEach((key, value) -> System.out.println(key + " | " + value));
-        HuffmanNode root = createTree(charFrequencies, charFrequencies.size());
 
-        // Step 3: Generate Huffman Codes
+        // Step 3: Create Huffman Tree
+        HuffmanNodeTemp root = createTree(charFrequencies, charFrequencies.size());
+
+        // Step 4: Generate Huffman Codes
         Map<Character, String> codes = new TreeMap<>();
         generatePrefixCodeTable(root, "", codes);
         codes.forEach((key, value) -> System.out.println(key + " | " + value));
 
-        // Step 4 5: Serialize Huffman Tree and Encoded Data
-        String compressedFilePath = path.getParent() + File.separator + path.getFileName().toString().replace(".txt", "") + ".bin";
+        // Step 5: Serialize Huffman Tree and Encoded Data
+        String compressedFilePath = "huffmancode.bin";
         writeCompressedFile(root, codes, str, compressedFilePath);
 
-        // Step 6 7: Decode the File
-        String decompressedFilePath = path.getParent() + File.separator + path.getFileName().toString().replace(".txt", "") + "_decompressed.txt";
+        // Step 6: Decode the File
+        String decompressedFilePath = "decompressed.txt";
         decodeFile(compressedFilePath, decompressedFilePath);
     }
 
-
-    
-
-    /**
-     * Reads the content of a file and returns it as a string.
-     *
-     * @param filePath the path of the file to be read
-     * @return the content of the file as a string
-     */
     private static String readFileContent(String filePath) {
         StringBuilder sb = new StringBuilder();
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
@@ -88,27 +71,20 @@ public class CompressionTool {
         return sb.toString();
     }
 
-    /**
-     * Creates a Huffman tree from the given character frequencies.
-     *
-     * @param charFrequencies
-     * @param n
-     * @return
-     */
-    private static HuffmanNode createTree(Map<Character, Integer> charFrequencies, int n) {
-        PriorityQueue<HuffmanNode> minHeap = new PriorityQueue<>(n, new MyComparator());
+    private static HuffmanNodeTemp createTree(Map<Character, Integer> charFrequencies, int n) {
+        PriorityQueue<HuffmanNodeTemp> minHeap = new PriorityQueue<>(n, new MyComparator1());
 
         for (Character ch : charFrequencies.keySet()) {
-            HuffmanNode huffmanNode = new HuffmanNode(ch, charFrequencies.get(ch));
+            HuffmanNodeTemp huffmanNode = new HuffmanNodeTemp(ch, charFrequencies.get(ch));
             minHeap.add(huffmanNode);
         }
 
-        HuffmanNode root = null;
+        HuffmanNodeTemp root = null;
         while (minHeap.size() > 1) {
-            HuffmanNode node1 = minHeap.poll();
-            HuffmanNode node2 = minHeap.poll();
+            HuffmanNodeTemp node1 = minHeap.poll();
+            HuffmanNodeTemp node2 = minHeap.poll();
 
-            HuffmanNode parentNode = new HuffmanNode('|', node1.val + node2.val);
+            HuffmanNodeTemp parentNode = new HuffmanNodeTemp('|', node1.val + node2.val);
             parentNode.left = node1;
             parentNode.right = node2;
             root = parentNode;
@@ -118,14 +94,7 @@ public class CompressionTool {
         return root;
     }
 
-    /**
-     * Generates a prefix code table for the given Huffman tree.
-     *
-     * @param root  the root node of the Huffman tree
-     * @param code  the current code being generated
-     * @param codes the map to store the generated prefix codes
-     */
-    public static void generatePrefixCodeTable(HuffmanNode root, String code, Map<Character, String> codes) {
+    public static void generatePrefixCodeTable(HuffmanNodeTemp root, String code, Map<Character, String> codes) {
         if (root == null) {
             return;
         }
@@ -139,27 +108,12 @@ public class CompressionTool {
         generatePrefixCodeTable(root.right, code + "1", codes);
     }
 
-    /**
-     * Calculates the frequency of each character in a given string.
-     *
-     * @param str the input string
-     * @return a map containing each character and its frequency
-     */
     public static Map<Character, Integer> getCharFrequencies(String str) {
         return str.chars().mapToObj(c -> (char) c)
                 .collect(Collectors.groupingBy(c -> c, TreeMap::new, Collectors.summingInt(c -> 1)));
     }
 
-
-    /**
-     * Writes the compressed file to a binary file.
-     *
-     * @param root
-     * @param codes
-     * @param text
-     * @param compressedFilePath
-     */
-    public static void writeCompressedFile(HuffmanNode root, Map<Character, String> codes, String text, String compressedFilePath) {
+    public static void writeCompressedFile(HuffmanNodeTemp root, Map<Character, String> codes, String text, String compressedFilePath) {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(compressedFilePath))) {
             // Serialize Huffman Tree
             oos.writeObject(root);
@@ -177,13 +131,6 @@ public class CompressionTool {
         }
     }
 
-    /**
-     * Writes a given bit string to an ObjectOutputStream as a byte array.
-     *
-     * @param oos       the ObjectOutputStream to write to
-     * @param bitString the bit string to write
-     * @throws IOException if an I/O error occurs
-     */
     private static void writeBits(ObjectOutputStream oos, String bitString) throws IOException {
         ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
         int byteVal = 0;
@@ -208,17 +155,11 @@ public class CompressionTool {
         oos.write(byteOut.toByteArray());
     }
 
-    /**
-     * Decodes the compressed file and writes the decoded text to an output file.
-     *
-     * @param compressedFilePath
-     * @param outputFilename
-     */
     public static void decodeFile(String compressedFilePath, String outputFilename) {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(compressedFilePath));
              BufferedWriter writer = new BufferedWriter(new FileWriter(outputFilename))) {
             // Deserialize Huffman Tree
-            HuffmanNode root = (HuffmanNode) ois.readObject();
+            HuffmanNodeTemp root = (HuffmanNodeTemp) ois.readObject();
 
             // Read binary data
             ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
@@ -230,11 +171,33 @@ public class CompressionTool {
             // Convert bytes to binary string
             StringBuilder bitString = new StringBuilder();
             for (byte b : byteOut.toByteArray()) {
-                bitString.append(String.format("%8s", Integer.toBinaryString(b & 0xFF)).replace(' ', '0'));
+                /*
+                 Convert the byte array from ByteArrayOutputStream to its binary string representation
+                 and append it to the StringBuilder bitString.
+
+                 Step-by-step explanation:
+                 1. byteOut.toByteArray() converts the contents of the ByteArrayOutputStream to a byte array.
+                 2. This loop iterates over each byte in the byte array.
+                 3. Integer.toBinaryString(b & 0xFF) converts the byte to an unsigned integer and then to its binary string.
+                    - b & 0xFF: Ensures the byte is treated as an unsigned 8-bit value.
+                    - Integer.toBinaryString(int i): Converts the integer to a binary string.
+                    - Example: if b is -1 (11111111 in binary as a signed byte), b & 0xFF results in 255 (11111111 in binary as unsigned).
+                 4. String.format("%8s", ...) formats the binary string to be at least 8 characters wide.
+                    - If the binary string has fewer than 8 characters, spaces are added to the beginning.
+                    - Example: "101" becomes "     101".
+                 5. .replace(' ', '0'): Replaces all spaces in the formatted string with zeros.
+                    - Continuing the example: "     101" becomes "00000101".
+                 6. bitString.append(...): Appends the 8-character binary string to the StringBuilder bitString.
+                   */
+                // Convert the byte to its unsigned integer representation and then to its binary string
+                String binaryString = String.format("%8s", Integer.toBinaryString(b & 0xFF)).replace(' ', '0');
+                // Append the binary string to bitString
+                bitString.append(binaryString);
             }
 
+
             // Decode binary string to original text
-            HuffmanNode currentNode = root;
+            HuffmanNodeTemp currentNode = root;
             for (char bit : bitString.toString().toCharArray()) {
                 currentNode = (bit == '0') ? currentNode.left : currentNode.right;
 
@@ -248,4 +211,3 @@ public class CompressionTool {
         }
     }
 }
-
