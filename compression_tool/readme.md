@@ -51,6 +51,17 @@ To encode a text file (`input.txt`):
 java -jar out/artifacts/compression_tool_jar/compression_tool.jar --operation encode --input path/to/input.txt
 ```
 
+#### Decoding a file
+
+To decode a text file(input.bin):
+
+
+``` sh 
+java -jar out\artifacts\compression_tool_jar\compression_tool.jar --operation=decode --input=input.bin --decoded=123.txt
+```
+
+
+
 
 ### project learnings
 1. file input
